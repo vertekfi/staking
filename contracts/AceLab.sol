@@ -407,8 +407,8 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
     }
 
     // Add a new token to the pool. Can only be called by the owner.
-    function add(uint _rewardPerSecond, IERC20Ext _Token, uint32 _startTime, uint32 _endTime, address _protocolOwner) external onlyAuth {
-        _add(_rewardPerSecond, _Token, _startTime, _endTime, _protocolOwner);
+    function add(uint _rewardPerSecond, IERC20Ext _Token, uint32 _startTime, uint32 _endTime, address _protocolOwner, uint32 _magicatBoost) external onlyAuth {
+        _add(_rewardPerSecond, _Token, _startTime, _endTime, _protocolOwner, _magicatBoost);
     }
 
     // Add a new token to the pool (internal).
@@ -444,9 +444,9 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
     }
 
     // Update the given pool's magicatBoost. Can only be called by the owner.
-    function setMagicatBoost(boost);(uint _pid, uint _magicatBoost) external onlyAdmin {
+    function setMagicatBoost(uint _pid, uint32 _magicatBoost) external onlyAdmin {
         updatePool(_pid);
-        require(magicatBoost < 5000); //5000 = 50%
+        require(_magicatBoost < 5000); //5000 = 50%
         poolInfo[_pid].magicatBoost = _magicatBoost;
         emit SetMagicatBoost(_pid, _magicatBoost);
     }
