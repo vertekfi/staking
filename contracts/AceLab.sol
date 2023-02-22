@@ -30,7 +30,6 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
     // Info of each pool.
     struct PoolInfo { //full slot = 32B
         IERC20 RewardToken;           //20B Address of reward token contract.
-        // uint32 userLimitEndTime;      //4B
         uint8 TokenPrecision;         //1B The precision factor used for calculations, equals the tokens decimals
                                       //7B [free space available here]
 
@@ -45,17 +44,15 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
         uint32 lastRewardTime;        //4B Last block time that reward distribution occurs.
         uint32 endTime;               //4B end time of pool
         uint32 startTime;             //4B start time of pool
+        uint32 magicatBoost;          //4B magicatBoostPerPool
     }
 
     //remember that this should be *1000 of the apparent value since onchain rarities are multiplied by 1000, also remember that this is per 1e18 wei of xboo.
     uint mpPerXboo = 300 * 1000;
 
     IERC20 public immutable xboo;
-    // uint32 public baseUserLimitTime = 2 days;
-    // uint public baseUserLimit;
 
     IERC721 public immutable magicat;
-    uint32 public magicatBoost = 1000;
     bool public emergencyCatWithdrawable = false;
 
     // Info of each pool.
@@ -71,9 +68,7 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
     // Sum of all rarities of all staked magicats
     uint public stakedMagicatPower;
     // Max total magicat power
-    // uint public constant MAX_MAGICAT_POWER = 10627876002;
     uint public constant MAX_MAGICAT_POWER = 1000;
-    // precisionOf[i] = 10**(30 - i)
     mapping (uint8 => uint) public precisionOf;
     mapping (address => bool) public isRewardToken;
 
@@ -82,6 +77,7 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
     event Withdraw(address indexed user, uint indexed pid, uint amount);
     event EmergencyWithdraw(address indexed user, uint indexed pid, uint amount);
     event SetRewardPerSecond(uint _pid, uint _gemsPerSecond);
+    event SetMagicatBoost(uint _pid, uint _magicatBoost);
     event StakeMagicat(address indexed user, uint indexed pid, uint indexed tokenID);
     event UnstakeMagicat(address indexed user, uint indexed pid, uint indexed tokenID);
 
@@ -122,12 +118,11 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
 
         if (block.timestamp > pool.lastRewardTime) {
             uint reward = pool.RewardPerSecond * getMultiplier(pool.lastRewardTime, block.timestamp, pool.startTime, pool.endTime);
-            if(pool.xBooStakedAmount != 0) accRewardPerShare += reward * (10000 - magicatBoost) / 10000 * precisionOf[pool.TokenPrecision] / pool.xBooStakedAmount;
-            if(pool.mpStakedAmount != 0) accRewardPerShareMagicat += reward * magicatBoost / 10000 * precisionOf[pool.TokenPrecision] / pool.mpStakedAmount;
+            if(pool.xBooStakedAmount != 0) accRewardPerShare += reward * (10000 - pool.magicatBoost) / 10000 * precisionOf[pool.TokenPrecision] / pool.xBooStakedAmount;
+            if(pool.mpStakedAmount != 0) accRewardPerShareMagicat += reward * pool.magicatBoost / 10000 * precisionOf[pool.TokenPrecision] / pool.mpStakedAmount;
         }
         xbooReward = (user.amount * accRewardPerShare / precisionOf[pool.TokenPrecision]) - user.rewardDebt;
         magicatReward = (effectiveMP(user.amount, user.mp) * accRewardPerShareMagicat / precisionOf[pool.TokenPrecision]) - user.catDebt;
-        // magicatReward = (effectiveMP(user.amount) * accRewardPerShareMagicat / precisionOf[pool.TokenPrecision]) - user.catDebt;
     }
 
     // Update reward variables for all pools. Be careful of gas spending!
@@ -147,8 +142,8 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
 
         uint reward = pool.RewardPerSecond * getMultiplier(pool.lastRewardTime, block.timestamp, pool.startTime, pool.endTime);
 
-        if(pool.xBooStakedAmount != 0) pool.accRewardPerShare += reward * (10000 - magicatBoost) / 10000 * precisionOf[pool.TokenPrecision] / pool.xBooStakedAmount;
-        if(pool.mpStakedAmount != 0) pool.accRewardPerShareMagicat += reward * magicatBoost / 10000 * precisionOf[pool.TokenPrecision] / pool.mpStakedAmount;
+        if(pool.xBooStakedAmount != 0) pool.accRewardPerShare += reward * (10000 - pool.magicatBoost) / 10000 * precisionOf[pool.TokenPrecision] / pool.xBooStakedAmount;
+        if(pool.mpStakedAmount != 0) pool.accRewardPerShareMagicat += reward * pool.magicatBoost / 10000 * precisionOf[pool.TokenPrecision] / pool.mpStakedAmount;
         pool.lastRewardTime = uint32(block.timestamp);
     }
 
@@ -165,10 +160,8 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
     }
 
     function effectiveMP(uint _amount, uint _mp) public view returns (uint) {
-    // function effectiveMP(uint _amount) public view returns (uint) {
         _amount = _stakeableMP(_amount);
         return _mp < _amount ? _mp : _amount;
-        // return _amount;
     }
 
     function _stakeableMP(uint _xboo) internal view returns (uint) {
@@ -201,10 +194,6 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][to];
 
-        // if(baseUserLimit > 0 && block.timestamp < pool.userLimitEndTime) {
-        //     require(user.amount + _amount <= baseUserLimit, "deposit: user has hit deposit cap");
-        // }
-
         updatePool(_pid);
 
         uint precision = precisionOf[pool.TokenPrecision];//precision
@@ -212,7 +201,6 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
 
         uint pending = (amount * pool.accRewardPerShare / precision) - user.rewardDebt;
         uint pendingCat = effectiveMP(amount, user.mp) * pool.accRewardPerShareMagicat / precision - user.catDebt;
-        // uint pendingCat = effectiveMP(amount) * pool.accRewardPerShareMagicat / precision - user.catDebt;
 
         user.amount += _amount;
         amount += _amount;
@@ -232,7 +220,6 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
         uint len = tokenIDs.length;
         if(len == 0) {
             user.catDebt = effectiveMP(amount, user.mp) * pool.accRewardPerShareMagicat / precision;
-            // user.catDebt = effectiveMP(amount) * pool.accRewardPerShareMagicat / precision;
             return;
         }
 
@@ -242,7 +229,6 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
 
         user.mp += pending;
         user.catDebt = effectiveMP(amount, user.mp) * pool.accRewardPerShareMagicat / precision;
-        // user.catDebt = effectiveMP(amount) * pool.accRewardPerShareMagicat / precision;
         pool.mpStakedAmount += pending;
 
         do {
@@ -284,7 +270,6 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
 
         uint pending = (amount * pool.accRewardPerShare / precision) - user.rewardDebt;
         uint pendingCat = (effectiveMP(amount, user.mp) * pool.accRewardPerShareMagicat / precision) - user.catDebt;
-        // uint pendingCat = (effectiveMP(amount) * pool.accRewardPerShareMagicat / precision) - user.catDebt;
 
         user.amount -= _amount;
         amount -= _amount;
@@ -303,17 +288,14 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
         uint len = tokenIDs.length;
         if(len == 0) {
             user.catDebt = effectiveMP(amount, user.mp) * pool.accRewardPerShareMagicat / precision;
-            // user.catDebt = effectiveMP(amount) * pool.accRewardPerShareMagicat / precision;
             return;
         }
 
-        // pending = sumOfRarities(tokenIDs);
         pending = tokenIDs.length;
         stakedMagicatPower -= pending;
 
         user.mp -= pending;
         user.catDebt = effectiveMP(amount, user.mp) * pool.accRewardPerShareMagicat / precision;
-        // user.catDebt = effectiveMP(amount) * pool.accRewardPerShareMagicat / precision;
         pool.mpStakedAmount -= pending;
 
         do {
@@ -352,7 +334,6 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
 
-        // uint userMPs = sumOfRarities(tokenIDs);
         uint userMPs = tokenIDs.length;
         user.mp = 0;
         user.catDebt = 0;
@@ -400,11 +381,6 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
         mpPerXboo = mul;
     }
 
-    function setMagicatBoost(uint32 boost) external onlyAdmin {
-        require(boost < 5000); //5000 = 50%
-        magicatBoost = boost;
-    }
-
     function changeEndTime(uint _pid, uint32 addSeconds) external onlyAuth {
         poolInfo[_pid].endTime += addSeconds;
     }
@@ -412,18 +388,6 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
     function stopReward(uint _pid) external onlyAuth {
         poolInfo[_pid].endTime = uint32(block.timestamp);
     }
-
-    // function changePoolUserLimitEndTime(uint _pid, uint32 _time) external onlyAdmin {
-    //     poolInfo[_pid].userLimitEndTime = _time;
-    // }
-
-    // function changeUserLimit(uint _limit) external onlyAdmin {
-    //     baseUserLimit = _limit;
-    // }
-
-    // function changeBaseUserLimitTime(uint32 _time) external onlyAdmin {
-    //     baseUserLimitTime = _time;
-    // }
 
     function checkForToken(IERC20 _Token) private view {
         require(!isRewardToken[address(_Token)], "checkForToken: reward token or xboo provided");
@@ -448,7 +412,7 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
     }
 
     // Add a new token to the pool (internal).
-    function _add(uint _rewardPerSecond, IERC20Ext _Token, uint32 _startTime, uint32 _endTime, address _protocolOwner) internal {
+    function _add(uint _rewardPerSecond, IERC20Ext _Token, uint32 _startTime, uint32 _endTime, address _protocolOwner, uint32 _magicatBoost) internal {
         require(_rewardPerSecond > 9, "AceLab _add: _rewardPerSecond needs to be at least 10 wei");
 
         checkForToken(_Token); // ensure you cant add duplicate pools
@@ -464,24 +428,27 @@ contract AceLab is SpookyAuth, ReentrancyGuard {
         poolinfo.RewardToken = _Token;
         poolinfo.RewardPerSecond = _rewardPerSecond;
         poolinfo.TokenPrecision = decimalsRewardToken;
-        //poolinfo.xBooStakedAmount = 0;
         poolinfo.startTime = _startTime;
         poolinfo.endTime = _endTime;
         poolinfo.lastRewardTime = lastRewardTime;
-        //poolinfo.accRewardPerShare = 0;
         poolinfo.protocolOwnerAddress = _protocolOwner;
-        // poolinfo.userLimitEndTime = lastRewardTime + baseUserLimitTime;
+        poolinfo.magicatBoost = _magicatBoost;
         poolAmount += 1;
     }
 
     // Update the given pool's reward per second. Can only be called by the owner.
     function setRewardPerSecond(uint _pid, uint _rewardPerSecond) external onlyAdmin {
-
         updatePool(_pid);
-
         poolInfo[_pid].RewardPerSecond = _rewardPerSecond;
-
         emit SetRewardPerSecond(_pid, _rewardPerSecond);
+    }
+
+    // Update the given pool's magicatBoost. Can only be called by the owner.
+    function setMagicatBoost(boost);(uint _pid, uint _magicatBoost) external onlyAdmin {
+        updatePool(_pid);
+        require(magicatBoost < 5000); //5000 = 50%
+        poolInfo[_pid].magicatBoost = _magicatBoost;
+        emit SetMagicatBoost(_pid, _magicatBoost);
     }
 
     /**
