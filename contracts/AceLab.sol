@@ -33,8 +33,8 @@ contract AceLab is Auth, ReentrancyGuardUpgradeable {
     // Info of each pool.
     struct PoolInfo {
         // Full slot = 32B
-        IERC20Upgradeable RewardToken; // 20B Address of reward token contract.
-        uint8 TokenPrecision; // 1B The precision factor used for calculations, equals the tokens decimals
+        IERC20Upgradeable rewardToken; // 20B Address of reward token contract.
+        uint8 tokenPrecision; // 1B The precision factor used for calculations, equals the tokens decimals
         // 7B [free space available here]
 
         uint xBooStakedAmount; // 32B # of xboo allocated to this pool
@@ -143,16 +143,18 @@ contract AceLab is Auth, ReentrancyGuardUpgradeable {
                 _getMultiplier(pool.lastRewardTime, block.timestamp, pool.startTime, pool.endTime);
             if (pool.xBooStakedAmount != 0)
                 accRewardPerShare +=
-                    (((reward * (10000 - pool.magicatBoost)) / 10000) * precisionOf[pool.TokenPrecision]) /
+                    (((reward * (10000 - pool.magicatBoost)) / 10000) * precisionOf[pool.tokenPrecision]) /
                     pool.xBooStakedAmount;
             if (pool.mpStakedAmount != 0)
                 accRewardPerShareMagicat +=
-                    (((reward * pool.magicatBoost) / 10000) * precisionOf[pool.TokenPrecision]) /
+                    (((reward * pool.magicatBoost) / 10000) * precisionOf[pool.tokenPrecision]) /
                     pool.mpStakedAmount;
         }
-        xbooReward = ((user.amount * accRewardPerShare) / precisionOf[pool.TokenPrecision]) - user.rewardDebt;
+
+        xbooReward = ((user.amount * accRewardPerShare) / precisionOf[pool.tokenPrecision]) - user.rewardDebt;
+
         magicatReward =
-            ((effectiveMP(user.amount, user.mp) * accRewardPerShareMagicat) / precisionOf[pool.TokenPrecision]) -
+            ((effectiveMP(user.amount, user.mp) * accRewardPerShareMagicat) / precisionOf[pool.tokenPrecision]) -
             user.catDebt;
     }
 
@@ -176,11 +178,11 @@ contract AceLab is Auth, ReentrancyGuardUpgradeable {
 
         if (pool.xBooStakedAmount != 0)
             pool.accRewardPerShare +=
-                (((reward * (10000 - pool.magicatBoost)) / 10000) * precisionOf[pool.TokenPrecision]) /
+                (((reward * (10000 - pool.magicatBoost)) / 10000) * precisionOf[pool.tokenPrecision]) /
                 pool.xBooStakedAmount;
         if (pool.mpStakedAmount != 0)
             pool.accRewardPerShareMagicat +=
-                (((reward * pool.magicatBoost) / 10000) * precisionOf[pool.TokenPrecision]) /
+                (((reward * pool.magicatBoost) / 10000) * precisionOf[pool.tokenPrecision]) /
                 pool.mpStakedAmount;
         pool.lastRewardTime = uint32(block.timestamp);
     }
@@ -233,7 +235,7 @@ contract AceLab is Auth, ReentrancyGuardUpgradeable {
 
         updatePool(_pid);
 
-        uint precision = precisionOf[pool.TokenPrecision]; //precision
+        uint precision = precisionOf[pool.tokenPrecision]; // precision
         uint amount = user.amount;
 
         uint pending = ((amount * pool.accRewardPerShare) / precision) - user.rewardDebt;
@@ -246,7 +248,7 @@ contract AceLab is Auth, ReentrancyGuardUpgradeable {
 
         user.rewardDebt = (amount * pool.accRewardPerShare) / precision;
 
-        if (pending > 0) safeTransfer(pool.RewardToken, to, pending + pendingCat);
+        if (pending > 0) safeTransfer(pool.rewardToken, to, pending + pendingCat);
         if (_amount > 0) xboo.safeTransferFrom(msg.sender, address(this), _amount);
 
         emit Deposit(msg.sender, _pid, _amount);
@@ -301,7 +303,7 @@ contract AceLab is Auth, ReentrancyGuardUpgradeable {
 
         updatePool(_pid);
 
-        uint precision = precisionOf[pool.TokenPrecision];
+        uint precision = precisionOf[pool.tokenPrecision];
         uint amount = user.amount;
 
         uint pending = ((amount * pool.accRewardPerShare) / precision) - user.rewardDebt;
@@ -314,7 +316,7 @@ contract AceLab is Auth, ReentrancyGuardUpgradeable {
 
         user.rewardDebt = (amount * pool.accRewardPerShare) / precision;
 
-        if (pending > 0) safeTransfer(pool.RewardToken, to, pending + pendingCat);
+        if (pending > 0) safeTransfer(pool.rewardToken, to, pending + pendingCat);
         if (_amount > 0) safeTransfer(xboo, to, _amount);
 
         emit Withdraw(to, _pid, _amount);
@@ -456,7 +458,7 @@ contract AceLab is Auth, ReentrancyGuardUpgradeable {
     }
 
     function emergencyRewardWithdraw(uint _pid, uint _amount) external onlyAdmin {
-        poolInfo[_pid].RewardToken.safeTransfer(poolInfo[_pid].protocolOwnerAddress, _amount);
+        poolInfo[_pid].rewardToken.safeTransfer(poolInfo[_pid].protocolOwnerAddress, _amount);
     }
 
     // Add a new token to the pool. Can only be called by the owner.
@@ -491,9 +493,9 @@ contract AceLab is Auth, ReentrancyGuardUpgradeable {
         if (precisionOf[decimalsRewardToken] == 0) precisionOf[decimalsRewardToken] = 10 ** (30 - decimalsRewardToken);
 
         PoolInfo storage poolinfo = poolInfo[poolAmount];
-        poolinfo.RewardToken = _Token;
+        poolinfo.rewardToken = _Token;
         poolinfo.RewardPerSecond = _rewardPerSecond;
-        poolinfo.TokenPrecision = decimalsRewardToken;
+        poolinfo.tokenPrecision = decimalsRewardToken;
         poolinfo.startTime = _startTime;
         poolinfo.endTime = _endTime;
         poolinfo.lastRewardTime = lastRewardTime;
