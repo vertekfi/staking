@@ -15,7 +15,7 @@ import "./interfaces/IERC20ExtUpgradeable.sol";
 // In a flip of a traditional farm, this contract only accepts xBOO as the staking token
 // Each new pool added is a new reward token, each with its own start times
 // end times, and rewards per second.
-contract AceLab is Auth, ReentrancyGuardUpgradeable {
+contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
 
