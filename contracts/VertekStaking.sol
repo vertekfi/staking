@@ -51,7 +51,7 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
 
     // Remember that this should be *1000 of the apparent value since onchain rarities are multiplied by 1000,
     // also remember that this is per 1e18 wei of xboo.
-    uint private _mpPerXboo = 300 * 1000;
+    uint private _mpPerXboo;
 
     // Number of pools
     uint public poolAmount;
@@ -63,7 +63,7 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
 
     IERC721Upgradeable public magicat;
 
-    bool public emergencyCatWithdrawable = false;
+    bool public emergencyCatWithdrawable;
 
     // Info of each pool.
     mapping(uint => PoolInfo) public poolInfo;
@@ -108,6 +108,9 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
         xboo = _xboo;
         magicat = _magicat;
         isRewardToken[address(_xboo)] = true;
+
+        _mpPerXboo = 300 * 1000;
+        emergencyCatWithdrawable = false;
     }
 
     function poolLength() external view returns (uint) {

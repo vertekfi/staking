@@ -6,20 +6,22 @@ import "../utils/Auth.sol";
 contract MagicatRarity is Auth {
     mapping(uint => uint) public rarityOf;
 
-    bool maySetRarities = true;
+    bool private _maySetRarities;
 
     function initialize() public initializer {
         __Auth_init();
+
+        _maySetRarities = true;
     }
 
     function setRarities(uint[] memory rarities, uint256 offset) public onlyAdmin {
-        require(maySetRarities);
+        require(_maySetRarities);
         uint len = rarities.length;
         for (uint i = 0; i < len; i++) rarityOf[i + offset] = rarities[i];
     }
 
     function relinquishSetRarity() public onlyAdmin {
-        maySetRarities = false;
+        _maySetRarities = false;
     }
 
     function rarityOfBatch(uint[] memory tokenIDs) public view returns (uint[] memory rarities) {

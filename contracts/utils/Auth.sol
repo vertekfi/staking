@@ -12,7 +12,7 @@ abstract contract Auth is AccessControlUpgradeable {
     }
 
     modifier onlyAdmin() {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), " FORBIDDEN (admin)");
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "FORBIDDEN (admin)");
         _;
     }
 
