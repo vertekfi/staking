@@ -37,7 +37,7 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
         uint8 tokenPrecision; // 1B The precision factor used for calculations, equals the tokens decimals
         // 7B [free space available here]
 
-        uint xBooStakedAmount; // 32B # of xboo allocated to this pool
+        uint vrtkStakedAmount; // 32B # of xboo allocated to this pool
         uint mpStakedAmount; // 32B # of mp allocated to this pool
         uint RewardPerSecond; // 32B reward token per second for this pool in wei
         uint accRewardPerShare; // 32B Accumulated reward per share, times the pools token precision. See below.
@@ -107,7 +107,9 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
 
         xboo = _xboo;
         magicat = _magicat;
-        isRewardToken[address(_xboo)] = true;
+        // Allow for a stake and earn the same
+        // Check in _add will still prevent duplicate VRTK/VRTK pools
+        // isRewardToken[address(_xboo)] = true;
 
         _mpPerXboo = 300 * 1000;
         emergencyCatWithdrawable = false;
@@ -120,12 +122,15 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
     // Return reward multiplier over the given _from to _to block.
     function _getMultiplier(uint _from, uint _to, uint startTime, uint endTime) internal pure returns (uint) {
         _from = _from > startTime ? _from : startTime;
+
         if (_from > endTime || _to < startTime) {
             return 0;
         }
+
         if (_to > endTime) {
             return endTime - _from;
         }
+
         return _to - _from;
     }
 
@@ -144,10 +149,10 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
         if (block.timestamp > pool.lastRewardTime) {
             uint reward = pool.RewardPerSecond *
                 _getMultiplier(pool.lastRewardTime, block.timestamp, pool.startTime, pool.endTime);
-            if (pool.xBooStakedAmount != 0)
+            if (pool.vrtkStakedAmount != 0)
                 accRewardPerShare +=
                     (((reward * (10000 - pool.magicatBoost)) / 10000) * precisionOf[pool.tokenPrecision]) /
-                    pool.xBooStakedAmount;
+                    pool.vrtkStakedAmount;
             if (pool.mpStakedAmount != 0)
                 accRewardPerShareMagicat +=
                     (((reward * pool.magicatBoost) / 10000) * precisionOf[pool.tokenPrecision]) /
@@ -179,10 +184,10 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
         uint reward = pool.RewardPerSecond *
             _getMultiplier(pool.lastRewardTime, block.timestamp, pool.startTime, pool.endTime);
 
-        if (pool.xBooStakedAmount != 0)
+        if (pool.vrtkStakedAmount != 0)
             pool.accRewardPerShare +=
                 (((reward * (10000 - pool.magicatBoost)) / 10000) * precisionOf[pool.tokenPrecision]) /
-                pool.xBooStakedAmount;
+                pool.vrtkStakedAmount;
         if (pool.mpStakedAmount != 0)
             pool.accRewardPerShareMagicat +=
                 (((reward * pool.magicatBoost) / 10000) * precisionOf[pool.tokenPrecision]) /
@@ -246,7 +251,7 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
 
         user.amount += _amount;
         amount += _amount;
-        pool.xBooStakedAmount += _amount;
+        pool.vrtkStakedAmount += _amount;
         balanceOf[to] += _amount;
 
         user.rewardDebt = (amount * pool.accRewardPerShare) / precision;
@@ -277,6 +282,7 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
             pending = tokenIDs[len];
             magicat.transferFrom(msg.sender, address(this), pending);
             _stakedMagicats[_pid][to].add(pending);
+
             emit StakeMagicat(to, _pid, pending);
         } while (len != 0);
     }
@@ -314,7 +320,7 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
 
         user.amount -= _amount;
         amount -= _amount;
-        pool.xBooStakedAmount -= _amount;
+        pool.vrtkStakedAmount -= _amount;
         balanceOf[msg.sender] -= _amount;
 
         user.rewardDebt = (amount * pool.accRewardPerShare) / precision;
@@ -353,17 +359,18 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw(uint _pid) external {
+    function emergencyWithdraw(uint _pid) external nonReentrant {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
 
         uint oldUserAmount = user.amount;
-        pool.xBooStakedAmount -= user.amount;
+        pool.vrtkStakedAmount -= user.amount;
         user.amount = 0;
         user.rewardDebt = 0;
         balanceOf[msg.sender] -= oldUserAmount;
 
-        xboo.safeTransfer(address(msg.sender), oldUserAmount);
+        xboo.safeTransfer(msg.sender, oldUserAmount);
+
         emit EmergencyWithdraw(msg.sender, _pid, oldUserAmount);
     }
 
@@ -373,7 +380,7 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
     // This will set your mp and catDebt to 0 even if you dont withdraw all cats.
     // Make sure to emergency withdraw all your cats if you ever call this.
     // !! DO NOT CALL THIS UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING !!
-    function emergencyCatWithdraw(uint _pid, uint[] calldata tokenIDs) external {
+    function emergencyCatWithdraw(uint _pid, uint[] calldata tokenIDs) external nonReentrant {
         require(emergencyCatWithdrawable);
 
         PoolInfo storage pool = poolInfo[_pid];
@@ -447,8 +454,8 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
         poolInfo[_pid].endTime = uint32(block.timestamp);
     }
 
-    function checkForToken(IERC20Upgradeable _Token) private view {
-        require(!isRewardToken[address(_Token)], "checkForToken: reward token or xboo provided");
+    function checkForToken(IERC20Upgradeable _token) private view {
+        require(!isRewardToken[address(_token)], "checkForToken: reward token or xboo provided");
     }
 
     function recoverWrongTokens(address _tokenAddress) external onlyAdmin {
@@ -467,36 +474,36 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
     // Add a new token to the pool. Can only be called by the owner.
     function add(
         uint _rewardPerSecond,
-        IERC20ExtUpgradeable _Token,
+        IERC20ExtUpgradeable _token,
         uint32 _startTime,
         uint32 _endTime,
         address _protocolOwner,
         uint32 _magicatBoost
     ) external onlyAuth {
-        _add(_rewardPerSecond, _Token, _startTime, _endTime, _protocolOwner, _magicatBoost);
+        _add(_rewardPerSecond, _token, _startTime, _endTime, _protocolOwner, _magicatBoost);
     }
 
     // Add a new token to the pool (internal).
     function _add(
         uint _rewardPerSecond,
-        IERC20ExtUpgradeable _Token,
+        IERC20ExtUpgradeable _token,
         uint32 _startTime,
         uint32 _endTime,
         address _protocolOwner,
         uint32 _magicatBoost
     ) internal {
-        require(_rewardPerSecond > 9, "AceLab _add: _rewardPerSecond needs to be at least 10 wei");
+        require(_rewardPerSecond > 9, "_rewardPerSecond needs to be at least 10 wei");
 
-        checkForToken(_Token); // ensure you cant add duplicate pools
-        isRewardToken[address(_Token)] = true;
+        checkForToken(_token); // ensure you cant add duplicate pools
+        isRewardToken[address(_token)] = true;
 
         uint32 lastRewardTime = uint32(block.timestamp > _startTime ? block.timestamp : _startTime);
-        uint8 decimalsRewardToken = uint8(_Token.decimals());
+        uint8 decimalsRewardToken = uint8(_token.decimals());
         require(decimalsRewardToken < 30, "Token has way too many decimals");
         if (precisionOf[decimalsRewardToken] == 0) precisionOf[decimalsRewardToken] = 10 ** (30 - decimalsRewardToken);
 
         PoolInfo storage poolinfo = poolInfo[poolAmount];
-        poolinfo.rewardToken = _Token;
+        poolinfo.rewardToken = _token;
         poolinfo.RewardPerSecond = _rewardPerSecond;
         poolinfo.tokenPrecision = decimalsRewardToken;
         poolinfo.startTime = _startTime;
@@ -517,8 +524,9 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
     // Update the given pool's magicatBoost. Can only be called by the owner.
     function setMagicatBoost(uint _pid, uint32 _magicatBoost) external onlyAdmin {
         updatePool(_pid);
-        require(_magicatBoost < 5000); //5000 = 50%
+        require(_magicatBoost < 5000); // 5000 = 50%
         poolInfo[_pid].magicatBoost = _magicatBoost;
+
         emit SetMagicatBoost(_pid, _magicatBoost);
     }
 
