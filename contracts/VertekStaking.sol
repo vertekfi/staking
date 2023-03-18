@@ -446,6 +446,18 @@ contract VertekStaking is Auth, ReentrancyGuardUpgradeable {
         _mpPerXboo = mul;
     }
 
+    /// @dev Reset initial testing setup before going live if needed
+    function resetPoolStart(uint _pid, uint32 start, uint32 end, uint256 rewardPerSecond) external onlyAuth {
+        PoolInfo storage pool = poolInfo[_pid];
+        require(pool.vrtkStakedAmount == 0, "Cannot reset pool with deposits");
+
+        uint32 lastRewardTime = uint32(block.timestamp > start ? block.timestamp : start);
+        pool.startTime = start;
+        pool.endTime = end;
+        pool.lastRewardTime = lastRewardTime;
+        pool.RewardPerSecond = rewardPerSecond;
+    }
+
     function changeEndTime(uint _pid, uint32 addSeconds) external onlyAuth {
         poolInfo[_pid].endTime += addSeconds;
     }

@@ -423,6 +423,418 @@
           }
         }
       }
+    },
+    "a21b93e8c5c333497d7db8a39bfa3aae3d9ea09b5f0253ef71e8971b6ed308e2": {
+      "address": "0xF0b05B1A7D4B55b736c2620039cf3058C1C6963a",
+      "txHash": "0x8f5aa3537b8777e9d2539aa3fa670a2dac8f1c9bff5217f26500df79e4285ea7",
+      "layout": {
+        "solcVersion": "0.8.13",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC165Upgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\introspection\\ERC165Upgradeable.sol:41"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)34_storage)",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:259"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:80"
+          },
+          {
+            "label": "_mpPerXboo",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_uint256",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:54"
+          },
+          {
+            "label": "poolAmount",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_uint256",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:57"
+          },
+          {
+            "label": "stakedMagicatPower",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_uint256",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:60"
+          },
+          {
+            "label": "xboo",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_contract(IERC20Upgradeable)728",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:62"
+          },
+          {
+            "label": "magicat",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_contract(IERC721Upgradeable)1161",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:64"
+          },
+          {
+            "label": "emergencyCatWithdrawable",
+            "offset": 20,
+            "slot": "205",
+            "type": "t_bool",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:66"
+          },
+          {
+            "label": "poolInfo",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_mapping(t_uint256,t_struct(PoolInfo)3255_storage)",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:69"
+          },
+          {
+            "label": "precisionOf",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_mapping(t_uint8,t_uint256)",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:71"
+          },
+          {
+            "label": "isRewardToken",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:73"
+          },
+          {
+            "label": "userInfo",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(UserInfo)3229_storage))",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:76"
+          },
+          {
+            "label": "_stakedMagicats",
+            "offset": 0,
+            "slot": "210",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(UintSet)3066_storage))",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:80"
+          },
+          {
+            "label": "balanceOf",
+            "offset": 0,
+            "slot": "211",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "VertekStaking",
+            "src": "contracts\\VertekStaking.sol:83"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IERC20Upgradeable)728": {
+            "label": "contract IERC20Upgradeable",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IERC721Upgradeable)1161": {
+            "label": "contract IERC721Upgradeable",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(UintSet)3066_storage)": {
+            "label": "mapping(address => struct EnumerableSetUpgradeable.UintSet)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(UserInfo)3229_storage)": {
+            "label": "mapping(address => struct VertekStaking.UserInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)34_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(UintSet)3066_storage))": {
+            "label": "mapping(uint256 => mapping(address => struct EnumerableSetUpgradeable.UintSet))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(UserInfo)3229_storage))": {
+            "label": "mapping(uint256 => mapping(address => struct VertekStaking.UserInfo))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(PoolInfo)3255_storage)": {
+            "label": "mapping(uint256 => struct VertekStaking.PoolInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint8,t_uint256)": {
+            "label": "mapping(uint8 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(PoolInfo)3255_storage": {
+            "label": "struct VertekStaking.PoolInfo",
+            "members": [
+              {
+                "label": "rewardToken",
+                "type": "t_contract(IERC20Upgradeable)728",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "tokenPrecision",
+                "type": "t_uint8",
+                "offset": 20,
+                "slot": "0"
+              },
+              {
+                "label": "vrtkStakedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "mpStakedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "RewardPerSecond",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "accRewardPerShare",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "accRewardPerShareMagicat",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "protocolOwnerAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "lastRewardTime",
+                "type": "t_uint32",
+                "offset": 20,
+                "slot": "6"
+              },
+              {
+                "label": "endTime",
+                "type": "t_uint32",
+                "offset": 24,
+                "slot": "6"
+              },
+              {
+                "label": "startTime",
+                "type": "t_uint32",
+                "offset": 28,
+                "slot": "6"
+              },
+              {
+                "label": "magicatBoost",
+                "type": "t_uint32",
+                "offset": 0,
+                "slot": "7"
+              }
+            ],
+            "numberOfBytes": "256"
+          },
+          "t_struct(RoleData)34_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Set)2594_storage": {
+            "label": "struct EnumerableSetUpgradeable.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(UintSet)3066_storage": {
+            "label": "struct EnumerableSetUpgradeable.UintSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)2594_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(UserInfo)3229_storage": {
+            "label": "struct VertekStaking.UserInfo",
+            "members": [
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rewardDebt",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "catDebt",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "mp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
     }
   }
 }
